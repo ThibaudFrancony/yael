@@ -1,0 +1,71 @@
+{
+  "expo": {
+    "name": "Buddiz",
+    "slug": "frontend",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
+    "scheme": "buddiz",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.emergent.localfeast.i07te6",
+      "usesAppleSignIn": true,
+      "infoPlist": {
+        "NSPhotoLibraryUsageDescription": "Ajoute une photo à ton profil et à tes repas",
+        "NSCameraUsageDescription": "Prends une photo pour ton profil et tes repas"
+      }
+    },
+    "android": {
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#FB5303"
+      },
+      "package": "com.emergent.localfeast.i07te6",
+      "permissions": ["READ_MEDIA_IMAGES", "CAMERA"]
+    },
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/images/favicon.png"
+    },
+    "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-image.png",
+          "imageWidth": 260,
+          "resizeMode": "contain",
+          "backgroundColor": "#FB5303"
+        }
+      ],
+      [
+        "expo-font",
+        {
+          "fonts": [
+            "./assets/fonts/Inter-Regular.ttf",
+            "./assets/fonts/Inter-Medium.ttf",
+            "./assets/fonts/Inter-SemiBold.ttf",
+            "./assets/fonts/Inter-Bold.ttf"
+          ]
+        }
+      ],
+      "expo-image",
+      "expo-secure-store",
+      "expo-web-browser",
+      "expo-status-bar",
+      "expo-apple-authentication",
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Ajoute une photo à ton profil et à tes repas"
+        }
+      ],
+      "@react-native-vector-icons/feather"
+    ],
+    "experiments": {
+      "typedRoutes": true
+    }
+  }
+}

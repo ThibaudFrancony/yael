@@ -1,0 +1,44 @@
+{
+  "summary": "Buddiz Phases 2-5 tested end-to-end. Backend: 15/15 new pytest cases pass in /app/backend/tests/test_phases_2_5.py plus 23/23 regression (Phase 1) pass. Coverage: payments_test_mode config flag, meal creation validation (price/max_guests/title/past-date/photo-required), edit-meal auth (403 for non-host), reservations endpoint host-only, withdraw meal, full booking flow (POST /bookings creates conversation + booking_request message + host notification; cannot book own meal 400; overbooking 400; guest-count updatable while REQUESTED, locked after CONFIRMED; non-host accept 403; host accept -> ACCEPTED_PENDING_PAYMENT + booking_accepted system msg + guest notif; non-participant booking read 403; /payments/checkout returns test_mode=true; /payments/confirm-test transitions to CONFIRMED with payment_status=succeeded; address hidden pre-payment and revealed on booking detail post-payment; /bookings/{id}/address returns exact address only after CONFIRMED; cancel booking >=24h before returns full refund_cents), decline flow, messaging authorization (non-participant 403 on GET conv and POST message; own-meal conversation 400), reviews (invalid overall 400, duplicate 409, host rating_count updates on marie), notifications (list + unread-count + read-all clears to 0). Frontend (mobile 390x844): logged in as marie/test/david across 7 flows. Publier form renders all fields + photo picker; empty-photo submit is blocked (correct — backend requires image for published). Guest -> David meal_seed_asiat: 'Envoyer un message' opens conversation, 'Demander une place' creates booking (booking-request-card visible). David sees conversations (5) with accept/decline actions. Guest profile shows upcoming reservation with contextual Annuler/Payer buttons (Payer hidden once CONFIRMED — correct conditional). Notifications screen renders 'Réservation acceptée' + 'Réservation confirmée 🎉' with 'Tout marquer comme lu'. David's profile shows 'Repas récents' with 'Évalué' badge (duplicate review 409 already enforced). Marie's 'Mes annonces' (5) + 'Gérer l'annonce' -> /edit-meal/{id} with editable title/price/guests/description + 'Retirer l'annonce'. Deprecated Expo warnings persist from Phase 1: shadow* -> boxShadow, props.pointerEvents -> style.pointerEvents, useNativeDriver.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": [
+      {"component": "shadow* style props (deprecated)", "issue": "Console warning: '\"shadow*\" style props are deprecated. Use \"boxShadow\".' Reproduced on every screen (welcome, discover, meal-detail, conversation, payment, profile, notifications). Migrate to boxShadow for RN 0.76+ compatibility."},
+      {"component": "props.pointerEvents (deprecated)", "issue": "Console warning: 'props.pointerEvents is deprecated. Use style.pointerEvents.' Move pointerEvents from component prop into style object."},
+      {"component": "useNativeDriver on web", "issue": "Console warning: 'Animated: useNativeDriver is not supported because the native animated module is missing. Falling back to JS-based animation.' Expected on Expo web preview; harmless on native but worth confirming animations that must be smooth are gated for web."}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/backend_test.py",
+    "/app/backend/tests/test_phases_2_5.py",
+    "/app/test_reports/pytest/phases_2_5.xml"
+  ],
+  "action_items": [
+    "LOW: Migrate all shadow* style props to boxShadow (RN 0.76+ / react-native-web).",
+    "LOW: Move component-level pointerEvents into style.pointerEvents.",
+    "LOW (from Phase 1, still open): welcome.tsx and login.tsx both expose testID='go-register-link'; give each a unique testID.",
+    "OPTIONAL: On 'Publier un repas', surface an explicit validation banner/toast when the user submits without a photo — current backend returns 400 'Une photo est requise pour publier.' but the web preview stays on /add without a visible error (photo picker also can't upload from Playwright, so consider a base64 preview + inline error text).",
+    "OPTIONAL: /app/backend/server.py is 1582 lines (Phase 1 flagged 878). Consider splitting into modules (auth, meals, bookings, payments, messaging, reviews, notifications) before Phase 6."
+  ],
+  "critical_code_review_comments": [
+    "server.py has grown from 878 -> 1582 lines. Split into routers/services per domain.",
+    "Booking state constants are UPPERCASE strings ('REQUESTED','CONFIRMED', ...). Serializer returns them as-is; frontend must match casing.",
+    "create_booking reuses an existing active booking for same (guest, meal) — good UX, but callers must be aware the returned booking may already be CONFIRMED (this bit the first test iteration for test@buddiz.demo).",
+    "_confirm_booking correctly guards against re-confirming a refunded booking via payment_status filter.",
+    "cancel_booking recomputes refund based on hours-before-start using naive datetime.fromisoformat(starts_at); starts_at is stored as ISO UTC so this works, but a defensive tzinfo attach would be safer.",
+    "GET /bookings/{id}/address only checks guest_id — hosts cannot fetch it via that endpoint. Acceptable since the host owns the address on the meal, but document it.",
+    "All Mongo reads correctly project out '_id'. Env vars used correctly on both sides."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_phases_2_5.py"
+  ],
+  "success_rate": {"backend": "100% (15/15 new + 23/23 regression)", "frontend": "~95% (7/7 flows exercised; photo upload not testable via web automation)"},
+  "seed_data_creation": "None new. Test created TEST_-prefixed meals via /api/meals (Marie) and a few TEST_ users via /api/auth/register. Reused seed users marie/david/sophie/test and seed meal_seed_asiat + book_seed_past.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "Reuse /app/backend/tests/test_phases_2_5.py as regression base. Key notes: (1) BOOKING states are UPPERCASE ('REQUESTED','ACCEPTED_PENDING_PAYMENT','CONFIRMED','DECLINED','COMPLETED','CANCELLED_BY_GUEST','CANCELLED_BY_HOST'). (2) create_booking is idempotent per (guest, meal) with an active booking — always spin up a fresh registered user for full-flow tests. (3) Seed booking book_seed_past is COMPLETED with guest=david, host=marie (meal_seed_pates) — used for review tests; a review may already exist so test both submit AND duplicate (409) paths. (4) Frontend testIDs to know: publish-meal-button, meal-title/price/guests/date/time/city/address/description, dietary-{name}, cuisine-{name}, interest-{name}, pick-meal-photo; send-message-button (on meal detail), request-booking-button, accept-booking-button, decline-booking-button, booking-request-card, booking-accepted-card, proceed-payment-button, message-input, send-message-btn; payment: guest-minus/plus, pay-button; payment-success: back-home-button/see-bookings-button/contact-host-button; notifications: mark-all-read/notif-{id}; profile: pay-{id}, cancel-{id}, review-{id}, my-meal-{id}, manage-meal-button. (5) Payment is TEST MODE — /api/payments/confirm-test flips booking to CONFIRMED; do NOT expect a real Stripe checkout URL until keys are set. (6) After the test run some seed users' upcoming reservations may already be CONFIRMED — 'Payer' button will be hidden; create a fresh test user to exercise the pay UI end-to-end.",
+  "rca_of_issue": "No blocking issues found. Two self-corrected artifacts during the run: (a) my first pytest run asserted lowercase state strings ('requested','confirmed','declined') but server constants are UPPERCASE — fixed the assertions and added a comment. (b) full-flow test on the fixed test@buddiz.demo user picked up a previously confirmed booking because create_booking reuses active bookings for the same (guest, meal) — switched to a fresh _register()-ed guest per run. Both fixes only touch the test file, not production code."
+}

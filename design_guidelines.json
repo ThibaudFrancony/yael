@@ -1,0 +1,173 @@
+{
+  "app_name": "BUDDIZ",
+  "personality": "1 iOS-Native Clean (infused with friendly rounded shapes)",
+  "personality_one_liner": "An Apple-clean, premium, and friendly social dining marketplace with full-bleed photography, crisp typography, and warm accents.",
+  "color": {
+    "surface": "#F9FAFB",
+    "onSurface": "#101828",
+    "surfaceSecondary": "#FFFFFF",
+    "onSurfaceSecondary": "#101828",
+    "surfaceTertiary": "#F3F4F6",
+    "onSurfaceTertiary": "#4A5565",
+    "surfaceInverse": "#1D003B",
+    "onSurfaceInverse": "#FFFFFF",
+    "brand": "#F54900",
+    "brandPrimary": "#1D003B",
+    "onBrandPrimary": "#FFFFFF",
+    "brandSecondary": "#F54900",
+    "onBrandSecondary": "#FFFFFF",
+    "brandTertiary": "#FFF0ED",
+    "onBrandTertiary": "#FC3D0C",
+    "success": "#027A48",
+    "onSuccess": "#FFFFFF",
+    "warning": "#B54708",
+    "onWarning": "#FFFFFF",
+    "error": "#B42318",
+    "onError": "#FFFFFF",
+    "info": "#175CD3",
+    "onInfo": "#FFFFFF",
+    "border": "#E5E7EB",
+    "borderStrong": "#D1D5DB",
+    "divider": "#E5E7EB",
+    "muted": "#6A7282",
+    "onBrand": "#FFFFFF"
+  },
+  "typography": {
+    "displayFontFamily": "Inter",
+    "textFontFamily": "Inter",
+    "scale": {
+      "sm": 12,
+      "base": 14,
+      "lg": 16,
+      "xl": 20,
+      "2xl": 24
+    }
+  },
+  "spacing": {
+    "rule": "Generous iOS-native rhythm. Ensure safe area clearance. Maintain thumb-zone accessibility with sticky bottom buttons. Large paddings inside cards.",
+    "xs": 4,
+    "sm": 8,
+    "md": 12,
+    "lg": 16,
+    "xl": 24,
+    "2xl": 32,
+    "3xl": 48
+  },
+  "radius_tokens": {
+    "sm": 8,
+    "md": 16,
+    "lg": 24,
+    "pill": 999
+  },
+  "shadow_tier": "1",
+  "navigation": "bottom_tabs",
+  "icon_set": "Feather",
+  "glassmorphism": {
+    "enabled": false,
+    "do's": [],
+    "dont's": [
+      "Do not use glassmorphism or blur effects, per the user's explicit request for no glassmorphism."
+    ]
+  },
+  "platform_libraries": {
+    "glass": {
+      "ios": "none",
+      "android": "none",
+      "low_end_android_fallback": "solid surfaceSecondary"
+    },
+    "image": "expo-image",
+    "blur": "none",
+    "bottom_sheet": "@gorhom/bottom-sheet",
+    "animation": "react-native-reanimated",
+    "gesture": "react-native-gesture-handler"
+  },
+  "screens": [
+    {
+      "name": "Auth",
+      "purpose": "Welcome users and provide seamless entry via Social/Email.",
+      "states": {
+        "loading": "Standard spinner with muted 'Connexion en cours...'",
+        "empty": "N/A",
+        "error": "Toast or inline message in red below inputs"
+      },
+      "layout": "Hero visual at the top (full width image of people dining). Below, a clean white panel with radius lg housing the brand logo, a brief welcoming text, and pill-shaped auth buttons (Apple, Google, Email). Apple button is primary CTA (dark purple #1D003B)."
+    },
+    {
+      "name": "Home (Découvrir)",
+      "purpose": "Discovery feed where users browse meals nearby.",
+      "states": {
+        "loading": "Skeleton cards matching the MealCard layout",
+        "empty": "Illustration of an empty table + 'Aucun repas trouvé à proximité' + 'Élargir la zone' CTA",
+        "error": "Error text + 'Réessayer' CTA"
+      },
+      "layout": "Top Header: Title 'Découvrir', sticky Search Bar (pill-shaped, 'Rechercher des repas...') with a Filter icon button beside it. Below: A vertical scrolling list of Large Meal Cards (24px radius). Each card features a full-bleed photo, a gradient scrim at the bottom for text contrast, and overlaid details: Meal name, Price per person, Host first name, City, Host rating, Remaining guests. The bottom navigation bar is sticky at the bottom."
+    },
+    {
+      "name": "Filters",
+      "purpose": "Allow users to narrow down meal discovery by distance, category, and interests.",
+      "states": {
+        "loading": "N/A",
+        "empty": "N/A",
+        "error": "N/A"
+      },
+      "layout": "Presented as a bottom sheet or full-screen modal. White background. Sections divided by subtle 1px borders. Distance slider (1-30km). Meal categories displayed as wrap-layout Pill chips (surfaceTertiary background, brandSecondary when selected). Quick filters toggles. Sticky bottom primary CTA 'Appliquer les filtres' (Dark Purple)."
+    },
+    {
+      "name": "MealDetail",
+      "purpose": "Show comprehensive meal details, build trust, and drive booking.",
+      "states": {
+        "loading": "Skeleton UI replicating the hero image and text blocks",
+        "empty": "N/A",
+        "error": "Error text + 'Réessayer' CTA"
+      },
+      "layout": "Full-bleed hero image at the top with a subtle back button overlay. Below, a rounded white content panel (radius 24px) overlapping the image. Sections: Title, City, Date, Time, Price. Host info block with Avatar and Verification Badge. A privacy block for the address: 'Adresse communiquée après confirmation...'. Dietary tags in pill shapes. Sticky bottom container with the primary CTA 'Envoyer un message'."
+    },
+    {
+      "name": "Profile",
+      "purpose": "Manage personal info, bookings, and host settings.",
+      "states": {
+        "loading": "Skeleton list items",
+        "empty": "N/A",
+        "error": "N/A"
+      },
+      "layout": "Header with User Avatar, Name, and 'Membre depuis...'. A vertical scrollable list of sections (Personal info, Payments, Upcoming bookings, My listings). Use surfaceSecondary white cards with 16px radius for grouping related rows. Simple chevron right icons for navigation."
+    }
+  ],
+  "images": {
+    "auth_hero": {
+      "url": "https://images.unsplash.com/photo-1699730148132-1409a3728479?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NTYxNzV8MHwxfHNlYXJjaHwxfHxmcmllbmRzJTIwZGluaW5nJTIwdG9nZXRoZXIlMjBkaW5uZXIlMjBwYXJ0eXxlbnwwfHx8fDE3ODk0MzE2NjN8MA&ixlib=rb-4.1.0&q=85",
+      "alt": "A group of friends dining together"
+    },
+    "meal_placeholder_1": {
+      "url": "https://images.unsplash.com/photo-1463183547458-6a2c760d0912?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzNzl8MHwxfHNlYXJjaHwxfHxmcmVuY2glMjBjdWlzaW5lJTIwZGlubmVyJTIwdGFibGV8ZW58MHx8fHwxNzg5NDMxNjYzfDA&ixlib=rb-4.1.0&q=85",
+      "alt": "French cuisine dinner table"
+    },
+    "meal_placeholder_2": {
+      "url": "https://images.unsplash.com/photo-1688437307687-fe226bddfab1?crop=entropy&cs=srgb&fm=jpg&ixid=M3w4NjAzNzl8MHwxfHNlYXJjaHwyfHxmcmVuY2glMjBjdWlzaW5lJTIwZGlubmVyJTIwdGFibGV8ZW58MHx8fHwxNzg5NDMxNjYzfDA&ixlib=rb-4.1.0&q=85",
+      "alt": "Candlelit french dinner table"
+    },
+    "host_avatar": {
+      "url": "https://images.unsplash.com/photo-1494790108377-be9c29b29330?crop=entropy&cs=srgb&fm=jpg&ixid=M3w3NTY2NzF8MHwxfHNlYXJjaHwxfHxmcmllbmRseSUyMGhvc3QlMjBzbWlsaW5nJTIwcG9ydHJhaXR8ZW58MHx8fHwxNzg5NDMxNjYzfDA&ixlib=rb-4.1.0&q=85",
+      "alt": "Friendly host portrait"
+    }
+  },
+  "haptics": {
+    "button_press": "selection",
+    "tab_change": "light",
+    "filter_toggle": "light",
+    "success_action": "notification_success"
+  },
+  "instructions_to_main_agent": [
+    "Strictly follow the user's color palette: Backgrounds #F9FAFB, text #101828, secondary text #4A5565, borders #E5E7EB, cards #FFFFFF.",
+    "Use Dark Purple (#1D003B) for primary actions/buttons and Orange (#F54900) for accents, highlights, and active states.",
+    "Use 'Inter' font everywhere. Make sure hierarchy is driven by size and color, capping weight at 500.",
+    "Completely disable glassmorphism, blur effects, and excessive gradients. Use solid colors and simple 1px borders.",
+    "Radius settings are specific: large cards get 24px, smaller grouped cards get 16px, buttons and tags are pill-shaped (999px).",
+    "Implement Apple-style layout: generous spacing, clean white cards over a very light gray (#F9FAFB) background.",
+    "Ensure 'Envoyer un message' on the meal detail screen is sticky at the bottom.",
+    "Ensure text superimposed on images has a gradient scrim behind it (top transparent to bottom surfaceInverse at 70%+) to maintain readability.",
+    "Implement bottom navigation with 4 tabs: Recherche, Ajouter, Messages, Profil. Use Feather icons. Active tab should be highlighted in Buddiz Orange (#F54900).",
+    "Do not implement dark mode. The user explicitly requested an Apple-clean, minimal white/very light gray premium feel. Dark mode is skipped for Phase 1.",
+    "All copy must be in French as specified (e.g., 'Découvrir', 'Rechercher des repas, cuisines, hôtes...')."
+  ]
+}

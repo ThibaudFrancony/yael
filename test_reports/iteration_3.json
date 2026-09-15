@@ -1,0 +1,41 @@
+{
+  "summary": "BUG FIX VERIFIED: Stripe Connect (Express) onboarding now works end-to-end. 9/9 new pytest cases in /app/backend/tests/test_stripe_connect.py pass, plus 23/23 regression from backend_test.py. Verified: (1) POST /api/connect/account no longer returns the 'sign up for Connect' error — it creates an Express account and returns {account_id starts 'acct_', onboarding_url starts 'https://connect.stripe.com/'}. (2) Idempotent: calling again for the same user reuses the same acct_ id and returns a FRESH onboarding_url. (3) stripe_connect_account_id is persisted on the user (proved via second-call reuse). (4) GET /api/connect/status returns {connected:true, ready:false, onboarding_complete:false, charges_enabled:false, payouts_enabled:false, details_submitted:false} for a freshly created account. (5) GET /api/connect/status for a user with no account returns {connected:false, ready:false, onboarding_complete:false} (200, not 500). (6) Both POST /api/connect/account and GET /api/connect/status return 401 without a Bearer token. (7) GET /api/connect/return/{account_id} → 307 to /connect-return?account_id=... (contains the account_id). (8) GET /api/connect/refresh/{account_id} → 307 to https://connect.stripe.com/... (fresh AccountLink). (9) Payment gating: /api/payments/checkout for a booking whose host has NO connect account returns 409 with French detail containing 'versement' ('L'hôte n'a pas encore configuré ses versements. Contacte-le avant de payer.'). Frontend (mobile 390x844): logged in as marie@buddiz.demo, Profile shows the 'Versements (hôte)' section with the pill 'Versements à configurer' and the button testID='setup-payouts-button' 'Configurer mes versements'; tapping it triggers POST /api/connect/account and REDIRECTS the web preview to the real Stripe hosted onboarding page (screenshot captured Stripe's 'Let's get started / Yael rela partners with Stripe' screen) — NO error toast surfaced. testID='view-earnings' is present. Logged in as david@buddiz.demo and opened /earnings — 'Mes versements' screen shows Gains nets 60 €, Commission Buddiz (10%) 6 €, Total brut 66 €, '1 remboursement(s) · 33 €', and per-meal breakdown (Dîner Fusion Asiatique: one Remboursé line and one +60 € Reversé line). Numbers match seed spec exactly. Deprecated Expo warnings persist from prior iterations (shadow*, pointerEvents, useNativeDriver) — no regressions.",
+  "backend_issues": {"critical": [], "minor": []},
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": [],
+    "react_native_issues": [
+      {"component": "shadow* style props (deprecated)", "issue": "Console warning: '\"shadow*\" style props are deprecated. Use \"boxShadow\".' Still reproducing on welcome / login / profile / earnings screens (unchanged since iteration_2). Reference: styles across /app/frontend/app/**"},
+      {"component": "props.pointerEvents (deprecated)", "issue": "Console warning: 'props.pointerEvents is deprecated. Use style.pointerEvents.' Still reproducing (unchanged since iteration_2)."},
+      {"component": "useNativeDriver on web", "issue": "Console warning: 'Animated: useNativeDriver is not supported... Falling back to JS-based animation.' Expected on Expo web preview, harmless on native."}
+    ]
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_stripe_connect.py",
+    "/app/backend/tests/backend_test.py",
+    "/app/test_reports/pytest/stripe_connect.xml"
+  ],
+  "action_items": [
+    "(No blockers for this bug fix.) Optional carry-overs from iteration_2: migrate shadow* → boxShadow; move component-level pointerEvents into style.pointerEvents; give welcome.tsx and login.tsx unique testIDs (both use 'go-register-link'); split server.py (>1750 lines) into per-domain routers."
+  ],
+  "critical_code_review_comments": [
+    "server.py: /api/connect/account correctly wraps stripe.Account.create in try/except and returns a 400 with the Stripe error message if Connect is not enabled — that's the exact error the user was previously hitting; now it succeeds because Connect (Express) is enabled on the account.",
+    "_connect_status_dict maps details_submitted → onboarding_complete and charges_enabled ∧ payouts_enabled → ready. Clean.",
+    "connect_status writes stripe_connect_status onto the user document on every call — fine for now, but hitting Stripe on every profile view could add latency; consider a short TTL cache if the profile screen polls.",
+    "/payments/checkout gating (server.py:1155-1165) checks account_id AND acct.charges_enabled/payouts_enabled. Good.",
+    "Return URL (/api/connect/return/{account_id}) trusts the path param; a malicious user could hit it with any acct_ id since it's a plain redirect. Low-risk (only leaks structure) but could be tightened by validating ownership.",
+    "APP_PUBLIC_URL is correctly sourced from env; return_url/refresh_url render as https://local-feast-62.preview.emergentagent.com/api/connect/... in tests.",
+    "PAYMENTS_TEST_MODE is False because STRIPE_SECRET_KEY is set, so the gating path is exercised for real — matches the requirement.",
+    "server.py has now grown to 1755 lines; splitting into routers/services becomes more urgent."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_stripe_connect.py"
+  ],
+  "success_rate": {"backend": "100% (9/9 new Stripe Connect + 23/23 regression)", "frontend": "100% (Marie profile + payout setup flow + David earnings screen all pass on mobile viewport)"},
+  "seed_data_creation": "Test creates several TEST_-prefixed users via /api/auth/register (test_nc_*, test_connect_*, test_host_gate_*, test_guest_gate_*) plus one TEST_ meal and one booking chain per run. These created real Stripe Express test accounts (acct_...) via the live TEST API — expected and safe.",
+  "retest_needed": false,
+  "should_main_agent_self_test": true,
+  "context_for_next_testing_agent": "The full flow now works with real Stripe TEST keys. If you need to re-run: /app/backend/tests/test_stripe_connect.py is idempotent per run (each test registers a fresh user). Every POST /api/connect/account for a NEW user creates a real Stripe Express account — do not delete these; they are tied to the buddiz_user_id metadata. For UI verification: login marie -> Profile -> tap 'Configurer mes versements' (testID='setup-payouts-button'); on web this navigates to https://connect.stripe.com/... — DO NOT try to complete the hosted onboarding form in automation (identity + bank details). Just assert (a) no error toast appears and (b) the network call to /api/connect/account returned 200 with an onboarding_url. For the earnings screen: login david -> navigate to /earnings — must show 60/6/66/33 € summary and two per-meal rows.",
+  "rca_of_issue": "Previous 'You can only create new accounts if you've signed up for Connect' error came from Stripe rejecting stripe.Account.create(type='express') because the platform account had not enabled Connect. User has now enabled Stripe Connect (Express) on the TEST account, so the same code path (server.py:1319 stripe_sdk.Account.create(...)) now succeeds and returns a real acct_ id. No code change was required beyond what was already in place. Verified end-to-end from backend API to frontend redirect."
+}
